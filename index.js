@@ -1,33 +1,40 @@
-
 const { error } = require('console');
 const fs = require('fs');
 
-function JSONUpdat(key, value, file_path) {
-    fs.readFile(file_path, "utf8" ,(err, data)=>{
-        if(err){
-             console.error("error reading file: ", err);
-             return
-            }
-        let dataJs = JSON.parse(data)
-        dataJs.forEach(obj => {
-            if (key in obj){
-                obj[key] = value
+function JSONUpdate(key, value, file_path) {
+    fs.readFile(file_path, "utf8", (err, data) => {
+        if (err) {
+            console.error("Error reading file: ", err);
+            return;
+        }
+
+        try {
+            let dataJs = JSON.parse(data);
+            let splitKey = key.split(".");
+            if (splitKey.length >= 2) {
+                // Check if the nested structure exists before setting the value
+                if (!dataJs[splitKey[0]]) {
+                    console.error(`Property '${splitKey[0]}' does not exist in the object.`);
+                    return;
+                }
+                dataJs[splitKey[0]][splitKey[1]] = value;
             } 
-            else{
-                obj[key] = value
-            }
-        });
-        let dataJSON = JSON.stringify(dataJs)
-        fs.writeFile(file_path, dataJSON, "utf8", (err)=>{
-            if (err) {console.error("error writing on the file: ", err)}
-            console.log('File successfully updated.');
-        })
-    })
+            let dataJSON = JSON.stringify(dataJs); // Add indentation for better readability
+            fs.writeFile(file_path, dataJSON, "utf8", (err) => {
+                if (err) {
+                    console.error("Error writing to the file: ", err);
+                } else {
+                    console.log('File successfully updated.');
+                }
+            });
+        } catch (error) {
+            console.error("Error parsing JSON data: ", error);
+        }
+    });
 }
 
-// JSONUpdat("new_key", "Hi", "data.json")
-JSONUpdat("name", "Abdo", "data.json")
-
+// Test the function
+JSONUpdate("user_2.name", "Abdo", "data.json");
 
 
 
